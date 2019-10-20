@@ -38,7 +38,9 @@ namespace MultiFaceRec
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            //Application.Exit();
+            Login log = new Login();
+            log.Show();
         }
 
         private void Dashboard_Load(object sender, EventArgs e)
@@ -53,6 +55,7 @@ namespace MultiFaceRec
                 btnNewRegi.Enabled = true;
                 btnTransferAmount.Enabled = false;
                 btnFacePay.Enabled = false;
+                btnLogOut.Enabled = true;
             }
             else
             {
@@ -72,5 +75,13 @@ namespace MultiFaceRec
             this.panelBody.Controls.Add(OC);
             OC.Show();
         }
+
+        private void btnLogOut_Click(object sender, EventArgs e)
+        {
+            Login log = new Login();
+            log.Show();
+        }
+
+       
     }
 }

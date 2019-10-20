@@ -33,7 +33,7 @@ namespace MultiFaceRec
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            SqlConnection conn = new SqlConnection("Data Source=LAPTOP-GCDVNC6K;Initial Catalog=IDEOLOGY_BANK;Integrated Security=True");
+            SqlConnection conn = new SqlConnection("Data Source=DESKTOP-8MTP45M\\MSSQLSERVER01;Initial Catalog=IDEOLOGY_BANK;Integrated Security=True");
 
             if (txtUsername.Text!="" && txtPassword.Text!="" && cmbAccountType.SelectedItem.ToString() == "Other")
             {

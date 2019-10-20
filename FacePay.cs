@@ -13,8 +13,9 @@ using System.Data;
 
 namespace MultiFaceRec
 {
-    public partial class FacePayTransaction : Form
+    public partial class FacePay : Form
     {
+
         //Declararation of all variables, vectors and haarcascades
         Image<Bgr, Byte> currentFrame;
         Capture grabber;
@@ -28,29 +29,9 @@ namespace MultiFaceRec
         List<string> NamePersons = new List<string>();
         int ContTrain, NumLabels, t;
         string name, names = null;
+        int k;
 
-        private void btnSaveNext_Click(object sender, EventArgs e)
-        {
-            if (txtSecurePin.Text != "")
-            {
-                TransactionWithPay();
-            }
-            else
-            {
-                MessageBox.Show("Face Detected Successfully....");
-                txtSecurePin.Focus();
-            }
-        }
-
-        private void FacePayTransaction_Load(object sender, EventArgs e)
-        {
-            txtAccountNumber.Text = Login.AccountNumber.ToString();
-            txtIFSC.Text = Login.IFSC.ToString();
-            textBox1.Text = Login.FirstName.ToString() + " " + Login.LastName.ToString();
-
-        }
-
-        public FacePayTransaction()
+        public FacePay()
         {
             InitializeComponent();
             //Load haarcascades for face detection
@@ -78,26 +59,52 @@ namespace MultiFaceRec
                 //MessageBox.Show(e.ToString());
                 MessageBox.Show("Nothing in binary database, please add at least a face(Simply train the prototype with the Add Face Button).", "Triained faces load", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
+        }
 
+        private void btnGetDetails_Click(object sender, EventArgs e)
+        {
+            TransactionWithPay();
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            txtPayAmount.Text = "";
+            txtPayeeAccountNo.Text = "";
+            txtPayeeIFSC.Text = "";
+            txtPayeeName.Text = "";
+            txtPayeeName.Focus();
+        }
+
+        private void btnPayAmount_Click(object sender, EventArgs e)
+        {
+            if (txtSecurePin.Text != "")
+            {
+                TransferAmount();
+            }
+            else
+            {
+                MessageBox.Show("Please Enter Secure Pin.");
+                txtSecurePin.Focus();
+            }
+        }
+
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            if (txtPayAmount.Text != "" && txtPayeeAccountNo.Text != "" && txtPayeeIFSC.Text != "" & txtPayeeName.Text != "")
+            {
+                grbFaceDetect.Enabled = true;
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (txtPayeeName.Text!="" && txtPayeeAccountNo.Text!="" && txtPayAmount.Text!="" && txtPayeeIFSC.Text!="")
-            {
-                //Initialize the capture device
-                grabber = new Capture();
-                grabber.QueryFrame();
-                //Initialize the FrameGraber event
-                Application.Idle += new EventHandler(FrameGrabber);
-                button1.Enabled = false;
-            }
-            else
-            {
-                MessageBox.Show("Please Enter Payee Details.");
-            }
+            //Initialize the capture device
+            grabber = new Capture();
+            grabber.QueryFrame();
+            //Initialize the FrameGraber event
+            Application.Idle += new EventHandler(FrameGrabber);
+            button1.Enabled = false;
         }
-
         void FrameGrabber(object sender, EventArgs e)
         {
             label3.Text = "0";
@@ -154,26 +161,6 @@ namespace MultiFaceRec
                 //Set the number of faces detected on the scene
                 label3.Text = facesDetected[0].Length.ToString();
 
-                /*
-                //Set the region of interest on the faces
-
-                gray.ROI = f.rect;
-                MCvAvgComp[][] eyesDetected = gray.DetectHaarCascade(
-                   eye,
-                   1.1,
-                   10,
-                   Emgu.CV.CvEnum.HAAR_DETECTION_TYPE.DO_CANNY_PRUNING,
-                   new Size(20, 20));
-                gray.ROI = Rectangle.Empty;
-
-                foreach (MCvAvgComp ey in eyesDetected[0])
-                {
-                    Rectangle eyeRect = ey.rect;
-                    eyeRect.Offset(f.rect.X, f.rect.Y);
-                    currentFrame.Draw(eyeRect, new Bgr(Color.Blue), 2);
-                }
-                 */
-
             }
             t = 0;
 
@@ -185,20 +172,54 @@ namespace MultiFaceRec
             //Show the faces procesed and recognized
             imageBoxFrameGrabber.Image = currentFrame;
             label4.Text = names;
-            
+
             names = "";
             //Clear the list(vector) of names
             NamePersons.Clear();
 
         }
 
-
         void TransactionWithPay()
         {
             if (label4.Text != "")
             {
-                string AccountNo = label4.Text.Split('~')[1].Trim().ToString();
-                if(AccountNo==txtAccountNumber.Text)
+
+                //string AccountNo = label4.Text.Split('~')[1].Trim().ToString();
+
+                if (AccountNo != "")
+                {
+                    SqlConnection conn = new SqlConnection("Data Source=DESKTOP-8MTP45M\\MSSQLSERVER01;Initial Catalog=IDEOLOGY_BANK;Integrated Security=True");
+
+                    string SQL = "select * from ACCOUNT_REGISTRATION A, AccountMaster C where A.Account_No='" + AccountNo + "' and A.ID=C.RegistrationID";
+
+                    SqlCommand cmd = new SqlCommand(SQL, conn);
+
+                    cmd.CommandType = CommandType.Text;
+                    conn.Open();
+
+                    SqlDataReader DR = cmd.ExecuteReader();
+                    if (DR.Read())
+                    {
+                        int Total_Amount = Convert.ToInt32(DR["TotalAmount"].ToString());
+                        txtAccountNumber.Text = DR["Account_No"].ToString();
+                        txtIFSC.Text = DR["IFSC"].ToString();
+                        textBox1.Text = DR["FIRST_NAME"].ToString() + " " + DR["MIDDLE_NAME"].ToString() + " " + DR["LAST_NAME"].ToString();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Sorry...!, No Record Found.");
+                    }
+                }
+            }
+        }
+
+        void TransferAmount()
+        {
+            string AccountNo = label4.Text.Split('~')[1].Trim().ToString();
+            if (AccountNo != "")
+            {
+
+                //if(Account_No==txtPayeeAccountNo.Text)
                 {
                     int Account_ID = 0;
                     SqlConnection conn = new SqlConnection("Data Source=DESKTOP-8MTP45M\\MSSQLSERVER01;Initial Catalog=IDEOLOGY_BANK;Integrated Security=True");
@@ -221,7 +242,7 @@ namespace MultiFaceRec
                         {
                             //Updating Table of user who paying
                             int Balance = Total_Amount - Convert.ToInt32(txtPayAmount.Text);
-                            string UpdateSQL = "update AccountMaster set TotalAmount='" + Balance + "', BalanceAmount='" + Balance + "', TransactionDate='" + DateTime.Today.ToShortDateString() + "' where RegistrationID='"+Account_ID+"' ";
+                            string UpdateSQL = "update AccountMaster set TotalAmount='" + Balance + "', BalanceAmount='" + Balance + "', TransactionDate='" + DateTime.Today.ToShortDateString() + "' where RegistrationID='" + Account_ID + "' ";
                             SqlCommand cmdupdate = new SqlCommand(UpdateSQL, conn);
                             cmdupdate.CommandType = CommandType.Text;
                             int i = cmdupdate.ExecuteNonQuery();
@@ -233,6 +254,14 @@ namespace MultiFaceRec
                                 InsertCMD.CommandType = CommandType.Text;
                                 int j = InsertCMD.ExecuteNonQuery();
                                 if (j == 1)
+                                {
+                                    //string UpdateSQL = "update AccountMaster set TotalAmount='" + Balance + "', BalanceAmount='" + Balance + "', TransactionDate='" + DateTime.Today.ToShortDateString() + "' where RegistrationID='" + Account_ID + "' ";
+                                    //SqlCommand cmdupdate = new SqlCommand(UpdateSQL, conn);
+                                    //cmdupdate.CommandType = CommandType.Text;
+                                    //int i = cmdupdate.ExecuteNonQuery();
+
+                                }
+                                if (k == 1)
                                 {
                                     MessageBox.Show("Transaction Successfull");
                                     base.Close();
@@ -257,9 +286,9 @@ namespace MultiFaceRec
                     {
                         MessageBox.Show("Please Enter Valid Pin, Try Again");
                     }
+
                 }
             }
         }
-
     }
 }

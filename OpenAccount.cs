@@ -23,7 +23,7 @@ namespace MultiFaceRec
 
         private void btnSaveNext_Click(object sender, EventArgs e)
         {
-            SqlConnection Conn = new SqlConnection("Data Source=LAPTOP-GCDVNC6K;Initial Catalog=IDEOLOGY_BANK;Integrated Security=True");
+            SqlConnection Conn = new SqlConnection("Data Source=DESKTOP-8MTP45M\\MSSQLSERVER01;Initial Catalog=IDEOLOGY_BANK;Integrated Security=True");
             
             StringBuilder sqlstr = new StringBuilder();
             
@@ -58,9 +58,9 @@ namespace MultiFaceRec
 
                         if(j==1)
                         {
-                            
+                            //Generating Username
                             string UserName =  txtFName.Text + "." + txtLName.Text;
-                            
+                            //Generating Password
                             string YearString = (Convert.ToDateTime(dtpBirthDate.Text)).ToString().Split('/')[2].Trim().ToString();
                             string BirthYear = YearString.Split(' ')[0].Trim().ToString();
                             string Password = txtFName.Text + "" + BirthYear;
@@ -113,7 +113,8 @@ namespace MultiFaceRec
 
         void Password()
         {
-           
+            //string BirthYear= (Convert.ToDateTime(dtpBirthDate.Text)).ToString().Split('-')[0].Trim().ToString();
+            //txtSecurePin.Text = txtFName.Text + "" + BirthYear;
         }
 
     }
